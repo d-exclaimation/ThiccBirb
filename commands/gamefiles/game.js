@@ -5,13 +5,19 @@ module.exports = {
     enemyLocation: [],
     gridCap: 15,
     isWin: false,
+    // NOTE: Game Initializers 
 	gameSetup() {
-        this.isWin = false;
+        // STUB: Reset State
+        this.isWin = false; // Reset the game win state
+
+        // ANCHOR: Randomize player and enemy
         const player = [Math.floor(Math.random() * this.gridCap/3), Math.floor(Math.random() * this.gridCap)];
         let enemy = [Math.floor(Math.random() * this.gridCap/3), Math.floor(Math.random() * (this.gridCap - 10) + 10)];
         if(enemy === player) {
             enemy = [Math.floor(Math.random() * this.gridCap/3), Math.floor(Math.random() * (this.gridCap - 10) + 10)];
         }
+
+        // STUB: Fill in the grid
         for(let i = 0; i < this.gridCap/3; i++) {
             let row = [];
             for(let j = 0; j < this.gridCap; j++) {
@@ -25,13 +31,20 @@ module.exports = {
             }
             this.gameState.push(row);
         }
+
+        // FIXME: Update the stored player and enemy location
         this.playerLocation = player;
         console.log(`Player starts at ${this.playerLocation}`);
         this.enemyLocation = enemy;
         console.log(`Enemy is at ${this.enemyLocation}`);
     },
+    // NOTE: Movement logic
 	move(direction) {
+
+        // STUB: Create a new array for the possible next moves
         let newLocation = [this.playerLocation[0], this.playerLocation[1]];
+
+        // ANCHOR: Check which direction is called
         switch(direction) {
             case 'w':
                 newLocation[0] -= 1;
@@ -47,6 +60,7 @@ module.exports = {
                 break;
         }
 
+        // TODO: If the future location is out of bound, reset it back, this is where is a moveable object logic would be placed (New Feature).
         if(newLocation[0] > this.gridCap/3 - 1 || newLocation[0] < 0) {
             newLocation[0] = this.playerLocation[0];
         }
@@ -54,13 +68,17 @@ module.exports = {
             newLocation[1] = this.playerLocation[1];
         }
 
+        // ANCHOR: Move player
         const temp = this.gameState[this.playerLocation[0]][this.playerLocation[1]];
         this.gameState[this.playerLocation[0]][this.playerLocation[1]] = ':black_large_square:';
         this.gameState[newLocation[0]][newLocation[1]] = temp;
 
+        // Set new location
         this.playerLocation = newLocation;
         console.log(`Player is now at ${this.playerLocation}`);
         console.log(`Enemy is at ${this.enemyLocation}`);
+
+        // REVIEW: Check whether the player has reached the bread
         if(this.playerLocation[0] === this.enemyLocation[0] && this.playerLocation[1] === this.enemyLocation[1]) {
             console.log('The goal is reached');
             this.isWin = true;
