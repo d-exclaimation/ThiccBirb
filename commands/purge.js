@@ -1,6 +1,7 @@
 module.exports = {
 	name: 'purge',
-	description: 'purging messages',
+    description: 'purging messages',
+    guildOnly: true,
 	execute(message, args) {
         const amount = parseInt(args[0]) + 1;
 		if(isNaN(amount)) {

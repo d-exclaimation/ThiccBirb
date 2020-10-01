@@ -17,6 +17,10 @@ for (const file of commandFiles) {
 	client.commands.set(command.name, command);
 }
 
+// FIXME: get game started
+const gameArray = fs.readdirSync('./commands/gamefiles');
+const game = require(`./commands/gamefiles/${gameArray[0]}`)
+
 
 // NOTE: when the client is ready, run this code
 // this event will only trigger one time after logging in
@@ -25,18 +29,43 @@ client.once('ready', () => {
 });
 
 // Listening for messages
-// TODO: Get better system on getting user input command instead of keep on listening for random words
 client.on('message', message => {
 
     // REVIEW: Check to see if the message is using the prefix and not from a bot
-    if (!message.content.startsWith(prefix)|| message.author.bot ) return;
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
-    const commandName = args.shift().toLowerCase();
+    const movementList = ['w', 'a', 's', 'd'];
+    if (message.author.bot) return;
+    let args = [];
+    let commandName = '';
+    
+    // Better movement by checking a set of list
+    let isMovement = false;
+    for(const word of movementList) {
+        if(String(message.content) === String(word)) {
+            isMovement = true;
+            break;
+        }
+    }
+    if(!game.gameState) { isMovement = false; }
+
+
+    if(isMovement) {
+        commandName = 'play';
+        args[0] = String(message.content);
+    } else {
+        if(!message.content.startsWith(prefix)) {
+            return;
+        }
+        args = message.content.slice(prefix.length).trim().split(/ +/);
+        commandName = args.shift().toLowerCase();
+    }
 
     // REVIEW: Dynamically find command according to the message and the command file name
     if (!client.commands.has(commandName)) return;
     const command = client.commands.get(commandName);
-
+    
+    if (command.guildOnly && message.channel.type === 'dm') {
+        return message.reply('I can\'t execute that command inside DMs!');
+    }
 
     // REVIEW: Check for cooldowns
     if (!cooldowns.has(command.name)) {
@@ -69,9 +98,13 @@ client.on('message', message => {
 		return message.channel.send(`You didn't provide any arguments, ${message.author}!`); // Reply saying no arguments
     }
     
-    // STUB: Dynamically execute command according to the variable set before
+    // NOTE: Dynamically execute command according to the variable set before
     try {
-        command.execute(message, args);
+        if(command.name === 'play') {
+            command.execute(message, args, game);
+        } else {
+            command.execute(message, args);
+        }
     } catch (error) {
         console.error(error);
         message.reply('there was an error trying to execute that command!');
