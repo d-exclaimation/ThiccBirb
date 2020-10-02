@@ -33,7 +33,6 @@ client.once('ready', () => {
 	console.log('Bot status is now online, check discord');
 });
 
-
 // NOTE: Messages output
 client.on('message', async message => {
 
@@ -51,7 +50,7 @@ client.on('message', async message => {
     for(const word of movementList) {
 
         // If the argument is a valid command, break and set the value to true
-        if(String(message.content) === String(word)) {
+        if(String(message.content).toLowerCase() === String(word)) {
             isMovement = true;
             break;
         }
@@ -93,7 +92,7 @@ client.on('message', async message => {
     const now = Date.now();
     const timestamps = cooldowns.get(command.name);
     // Default timeout is 3 second
-    const cooldownAmount = (command.cooldown || 1) * 1000;
+    const cooldownAmount = (command.cooldown || 0.25) * 1000;
 
     // if timestamps has a user in it meaning the user is in timeout
     if (timestamps.has(message.author.id)) {
@@ -120,7 +119,7 @@ client.on('message', async message => {
     // ANCHOR: Dynamically execute command according to the variable set before
     try {
         if(command.name === 'play') {
-            command.execute(message, args, game);
+            command.execute(message, args, game, Discord);
         } else {
             command.execute(message, args);
         }
