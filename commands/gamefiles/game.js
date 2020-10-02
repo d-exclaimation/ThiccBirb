@@ -32,11 +32,9 @@ module.exports = {
             this.gameState.push(row);
         }
 
-        // FIXME: Update the stored player and enemy location
+        // STUB: Update the stored player and enemy location
         this.playerLocation = player;
-        console.log(`Player starts at ${this.playerLocation}`);
         this.enemyLocation = enemy;
-        console.log(`Enemy is at ${this.enemyLocation}`);
     },
     // NOTE: Movement logic
 	move(direction) {
@@ -75,8 +73,6 @@ module.exports = {
 
         // Set new location
         this.playerLocation = newLocation;
-        console.log(`Player is now at ${this.playerLocation}`);
-        console.log(`Enemy is at ${this.enemyLocation}`);
 
         // REVIEW: Check whether the player has reached the bread
         if(this.playerLocation[0] === this.enemyLocation[0] && this.playerLocation[1] === this.enemyLocation[1]) {

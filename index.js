@@ -30,12 +30,12 @@ const game = require(`./commands/gamefiles/${gameArray[0]}`)
 // STUB: when the client is ready, run this code
 // this event will only trigger one time after logging in
 client.once('ready', () => {
-	console.log('Ready!, Bot is now online');
+	console.log('Bot status is now online, check discord');
 });
 
 
 // NOTE: Messages output
-client.on('message', message => {
+client.on('message', async message => {
 
     // REVIEW: Check to see if the message is using the prefix and not from a bot
     const movementList = ['w', 'a', 's', 'd'];
