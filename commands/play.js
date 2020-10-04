@@ -84,7 +84,9 @@ module.exports = {
         return embed;
     },
     editGame(message, gamefile, Discord) {
+        // Use the saved message, and edit it with a new embed
         this.gameMsg.edit(this.show(gamefile, Discord))
+        // Get the current channel and remove the movement message to remove cluter
         const currentChannel = message.channel;
         currentChannel.messages.delete(message);
     },

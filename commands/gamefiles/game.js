@@ -123,10 +123,14 @@ module.exports = {
                 moveableCoordinate = newLocation;
                 newLocation = this.playerLocation;
             }
-
+            // Create a new object
             let object = this.themes[this.index][1];
+            // If the current moveable reaches a target than change the object to the finished object
             if(this.gameState[moveableCoordinate[0]][moveableCoordinate[1]] === this.themes[this.index][0]) { object = this.themes[this.index][2]}
+            // Change the next new location into the object
             this.gameState[moveableCoordinate[0]][moveableCoordinate[1]] = object;
+            
+            // TODO: Update the moveable coordinate, to be able to determine the end game
             for(let item = 0; item < this.boxLocation.length; item++) {
                 let coordinate = this.boxLocation[item];
                 if(coordinate[0] === newLocation[0] && coordinate[1] === newLocation[1]) {
@@ -146,6 +150,7 @@ module.exports = {
         this.checkWin();
     },
     checkIn(array, grid) {
+        // Given a normal array and a grid, check if the grid contains that array
         for(let i = 0; i < grid.length; i++) {
             let loop = grid[i];
             if(loop[0] === array[0] && loop[1] === array[1]){
@@ -155,6 +160,7 @@ module.exports = {
         return false;
     },
     checkWin() {
+        // Check for the enemy locations and box locations 
         for(let i = 0; i < this.boxLocation.length; i++) {
             if(!this.checkIn(this.boxLocation[i], this.enemyLocation)) {
                 this.isWin = false;
