@@ -3,7 +3,7 @@ module.exports = {
     description: 'kick player',
     guildOnly: true,
     // NOTE: Kick Users Executable
-	execute(message, args) {
+	execute(message, args, Discord) {
         // Check whether there are users mentioned and not over the limit of one
 		if(!message.mentions.users.size || message.mentions.users.size > 1) {
             return message.reply('No users is mentioned or over mentioned users');

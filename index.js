@@ -121,7 +121,7 @@ client.on('message', async message => {
         if(command.name === 'play') {
             command.execute(message, args, game, Discord);
         } else {
-            command.execute(message, args);
+            command.execute(message, args, Discord);
         }
     } catch (error) {
         console.error(error);

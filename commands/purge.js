@@ -2,7 +2,7 @@ module.exports = {
 	name: 'purge',
     description: 'purging messages',
     guildOnly: true,
-	execute(message, args) {
+	execute(message, args, Discord) {
         const amount = parseInt(args[0]) + 1;
 		if(isNaN(amount)) {
             return message.reply('You big gay, learn to count numbers');
