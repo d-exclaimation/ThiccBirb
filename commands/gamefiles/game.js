@@ -59,8 +59,7 @@ class Roboton {
     move(direction) {
         // Create a prediction
         let predictedCoordinate = [this.playerCoordinate[0], this.playerCoordinate[1]];
-        console.log(`${predictedCoordinate} at first`);
-        console.log(direction);
+
         switch(direction) {
             case 'w':
                 predictedCoordinate[0] -= 1;
@@ -85,7 +84,6 @@ class Roboton {
         }
 
         if(Roboton.checkArray(predictedCoordinate, this.targetsCoordinate)) { predictedCoordinate = this.playerCoordinate; }
-        console.log(`${predictedCoordinate} is where it is now`);
 
         // Moveable items
         if(this.state[predictedCoordinate[0]][predictedCoordinate[1]] === this.settings[this.settingIndex][1]) {
@@ -121,15 +119,12 @@ class Roboton {
                 predictedCoordinate = this.playerCoordinate;
             }
 
-            if(this.state[itemPrediction[0]][itemPrediction[1]] === this.settings[this.settingIndex][2]) {
-                itemPrediction = [predictedCoordinate[0], predictedCoordinate[1]];
-                predictedCoordinate = this.playerCoordinate;
-            }
 
             // Create a new object
             let object = this.settings[this.settingIndex][1];
             // If the current moveable reaches a target than change the object to the finished object
-            if(this.state[itemPrediction[0]][itemPrediction[1]] === this.settings[this.settingIndex][0]) { object = this.settings[this.settingIndex][2]}
+            if(this.state[itemPrediction[0]][itemPrediction[1]] === this.settings[this.settingIndex][0]) { object = this.settings[this.settingIndex][2]; }
+            else if(this.state[itemPrediction[0]][itemPrediction[1]] === this.settings[this.settingIndex][2]) { object = this.settings[this.settingIndex][2]; }
             // Change the next new location into the object
             this.state[itemPrediction[0]][itemPrediction[1]] = object;
             
