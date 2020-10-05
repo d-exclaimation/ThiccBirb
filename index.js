@@ -55,8 +55,6 @@ client.on('message', async message => {
             break;
         }
     }
-    // However is the game is not yet setup, then reset back to false
-    if(!game.gameState) { isMovement = false; }
 
 
     // ANCHOR: Check whether the message given is a valid prefixed command, or a movement command, and not from a bot
