@@ -3,7 +3,10 @@ class Roboton {
     playerCoordinate;
     targetsCoordinate;
     itemsCoordinate;
-    gridSize = 15;
+    grid = {
+        width: 15,
+        height: 5,
+    };
     settings = [[':lock:', ':key:', ':unlock:'], [':pensive:', ':meat_on_bone:', ':star_struck:'], [':unamused:', ':microbe:', ':sick:'], [':sick:', ':syringe:', ':smile:']];
     settingIndex;
     isWin;
@@ -17,28 +20,34 @@ class Roboton {
         this.itemsCoordinate = [];
 
         // Create game state and all things required for the game
-        const numberOfObjective = Math.floor(Math.random() * 6) + 3;
-        this.settingIndex = Math.floor(Math.random() * 4);
+        const numberOfObjective = Roboton.uniform(6) + 3;
+        this.settingIndex = Roboton.uniform(4);
         for(let obj = 0; obj < numberOfObjective; obj++) {
-            const target = [Math.floor(Math.random() * this.gridSize/3), Math.floor(Math.random() * this.gridSize)];
-            let key = [Math.floor(Math.random() * (this.gridSize/3 - 1)) + 1, Math.floor(Math.random() * (this.gridSize - 1)) + 1];
-            while((key[0] === target[0] && key[1] === target[1]) || (key[0] === this.gridSize/3 - 1 || key[1] === this.gridSize - 1) || Roboton.checkArray(key, this.targetsCoordinate)) {
-                key = [Math.floor(Math.random() * (this.gridSize/3 - 1)) + 1, Math.floor(Math.random() * (this.gridSize - 1)) + 1];
+            const target = [Roboton.uniform(this.grid.height), Roboton.uniform(this.grid.width)];
+            let key = [Roboton.uniform((this.grid.height - 1), 1), Roboton.uniform((this.grid.width - 1), 1)];
+
+            // Check if overlap happened
+            const onEdges = (key[0] === this.grid.height - 1 || key[1] === this.grid.width - 1); // with edges
+            const onSelf = (key[0] === target[0] && key[1] === target[1]); // with others
+            while( onSelf || onEdges || Roboton.checkArray(key, this.targetsCoordinate)) {
+                key = [Roboton.uniform((this.grid.height - 1), 1), Roboton.uniform((this.grid.width - 1), 1)];
             }
+
+            // Set new targets coordinate and key
             this.targetsCoordinate.push(target);
             this.itemsCoordinate.push(key);
         }
 
         // Generate player
-        let player = [Math.floor(Math.random() * this.gridSize/3), Math.floor(Math.random() * this.gridSize)];
+        let player = [Math.floor(Math.random() * this.grid.height), Math.floor(Math.random() * this.grid.width)];
         while(Roboton.checkArray(player, this.targetsCoordinate) || Roboton.checkArray(player, this.itemsCoordinate)) {
-            player = [Math.floor(Math.random() * this.gridSize/3), Math.floor(Math.random() * this.gridSize)];
+            player = [Math.floor(Math.random() * this.grid.height), Math.floor(Math.random() * this.grid.width)];
         }
 
         // STUB: Create game state grid
-        for(let y = 0; y < this.gridSize/3; y++) {
+        for(let y = 0; y < this.grid.height; y++) {
             let currentRow = [];
-            for(let x = 0; x < this.gridSize; x++) {
+            for(let x = 0; x < this.grid.width; x++) {
                 const currentCoordinate = [y, x];
                 if(y === player[0] && x === player[1]) {
                     currentRow.push(':penguin:');
@@ -77,72 +86,90 @@ class Roboton {
 
         // Check for boundaries
         if(predictedCoordinate[0] > this.gridSize/3 - 1 || predictedCoordinate[0] < 0) {
-            predictedCoordinate[0] = this.playerCoordinate[0];
+            return;
         }
         if(predictedCoordinate[1] > this.gridSize - 1 || predictedCoordinate[1] < 0) {
-            predictedCoordinate[1] = this.playerCoordinate[1];
+            return;
         }
 
-        if(Roboton.checkArray(predictedCoordinate, this.targetsCoordinate)) { predictedCoordinate = this.playerCoordinate; }
+        // Check for targets so player doesn't crash into one
+        if(Roboton.checkArray(predictedCoordinate, this.targetsCoordinate)) { return; }
 
-        // Moveable items
+        // Moveable items, recursive. If it able to be moved, move it then say that it moved so we can continue, otherwise, stop the process
         if(this.state[predictedCoordinate[0]][predictedCoordinate[1]] === this.settings[this.settingIndex][1]) {
-            // Predict item next movement
-            let itemPrediction = [predictedCoordinate[0], predictedCoordinate[1]];
-
-            // Make prediction
-            switch(direction) {
-                case 'w':
-                    itemPrediction[0] -= 1;
-                    break;
-                case 's':
-                    itemPrediction[0] += 1;
-                    break;
-                case 'a':
-                    itemPrediction[1] -= 1;
-                    break;
-                case 'd':
-                    itemPrediction[1] += 1;
-                    break;
-            }
-            // REVIEW: If the future location is out of bound, reset it back, 
-            if(itemPrediction[0] > this.gridSize/3 - 1 || itemPrediction[0] < 0) {
-                itemPrediction[0] = predictedCoordinate[0];
-                predictedCoordinate = this.playerCoordinate;
-            }
-            if(itemPrediction[1] > this.gridSize - 1 || itemPrediction[1] < 0) {
-                itemPrediction[1] = predictedCoordinate[1];
-                predictedCoordinate = this.playerCoordinate;
-            }
-            if(this.state[itemPrediction[0]][itemPrediction[1]] === this.settings[this.settingIndex][1]) {
-                itemPrediction = [predictedCoordinate[0], predictedCoordinate[1]];
-                predictedCoordinate = this.playerCoordinate;
-            }
-
-
-            // Create a new object
-            let object = this.settings[this.settingIndex][1];
-            // If the current moveable reaches a target than change the object to the finished object
-            if(this.state[itemPrediction[0]][itemPrediction[1]] === this.settings[this.settingIndex][0]) { object = this.settings[this.settingIndex][2]; }
-            else if(this.state[itemPrediction[0]][itemPrediction[1]] === this.settings[this.settingIndex][2]) { object = this.settings[this.settingIndex][2]; }
-            // Change the next new location into the object
-            this.state[itemPrediction[0]][itemPrediction[1]] = object;
-            
-            // TODO: Update the moveable coordinate, to be able to determine the end game
-            for(let index = 0; index < this.itemsCoordinate.length; index++) {
-                let coordinate = this.itemsCoordinate[index];
-                if(coordinate[0] === predictedCoordinate[0] && coordinate[1] === predictedCoordinate[1]) {
-                    this.itemsCoordinate[index] = itemPrediction;
-                }
-            }
+            let isMove = this.moveObject(predictedCoordinate, direction)
+            if (!isMove) { return; }
         }
+
         // Switchero
         const tempItem = this.state[this.playerCoordinate[0]][this.playerCoordinate[1]];
         this.state[this.playerCoordinate[0]][this.playerCoordinate[1]] = ':black_large_square:';
         this.state[predictedCoordinate[0]][predictedCoordinate[1]] = tempItem; 
 
-        this.playerCoordinate = predictedCoordinate;
+        // Update player coordinate and check if the game has been won
+        this.playerCoordinate[0] = predictedCoordinate[0];
+        this.playerCoordinate[1] = predictedCoordinate[1];
         this.winningCheck();
+    }
+
+    moveObject(location, direction) {
+        // Predict item next movement
+        let itemPrediction = [location[0], location[1]];
+
+        // Make prediction
+        switch(direction) {
+            case 'w':
+                itemPrediction[0] -= 1;
+                break;
+            case 's':
+                itemPrediction[0] += 1;
+                break;
+            case 'a':
+                itemPrediction[1] -= 1;
+                break;
+            case 'd':
+                itemPrediction[1] += 1;
+                break;
+        }
+        // REVIEW: If the future location is out of bound, reset it back, 
+        if(itemPrediction[0] > this.gridSize/3 - 1 || itemPrediction[0] < 0) {
+            return false;
+        }
+        if(itemPrediction[1] > this.gridSize - 1 || itemPrediction[1] < 0) {
+            return false
+        }
+
+        // REVIEW: If future location is a finished target just stop the process
+        if(this.state[itemPrediction[0]][itemPrediction[1]] === this.settings[this.settingIndex][2]) {
+            return false; 
+        }
+
+        // NOTE: If the future location is another item, recursively move that first, otherwise invalidate movement
+        if(this.state[itemPrediction[0]][itemPrediction[1]] === this.settings[this.settingIndex][1]) {
+            let isMove = this.moveObject(itemPrediction, direction)
+            if(!isMove) { return false; }
+        }
+
+        // Create a new object
+        let object = this.settings[this.settingIndex][1];
+        // If the current moveable reaches a target than change the object to the finished object
+        if(this.state[itemPrediction[0]][itemPrediction[1]] === this.settings[this.settingIndex][0]) { object = this.settings[this.settingIndex][2]; }
+
+        // Change the next new location into the object
+        this.state[itemPrediction[0]][itemPrediction[1]] = object;
+        this.state[location[0]][location[1]] = ':black_large_square:';
+
+        // TODO: Update the moveable coordinate, to be able to determine the end game
+        for(let index = 0; index < this.itemsCoordinate.length; index++) {
+            let coordinate = this.itemsCoordinate[index];
+            if(coordinate[0] === location[0] && coordinate[1] === location[1]) {
+                this.itemsCoordinate[index][0] = itemPrediction[0];
+                this.itemsCoordinate[index][1] = itemPrediction[1];
+            }
+        }
+
+        // Notify the caller that  a movement happened meaning it is safe to move for them
+        return true; 
     }
 
     winningCheck() {
@@ -164,180 +191,13 @@ class Roboton {
         }
         return false;
     }
+
+    static uniform(start, end = 0) {
+        return Math.floor(Math.random() * (start - end) + end)
+    }
+
 }
+
 
 
 module.exports = { PenguinGame: Roboton };
-
-let previousGame = {
-    name: 'game',
-    gameState: [],
-    playerLocation: [],
-    enemyLocation: [],
-    boxLocation: [],
-    gridCap: 15,
-    themes: [[':lock:', ':key:', ':unlock:'], [':pensive:', ':meat_on_bone:', ':star_struck:'], [':smile:', ':microbe:', ':sick:'], [':sick:', ':syringe:', ':smile:']],
-    index: 0,
-    isWin: false,
-    // NOTE: Game Initializers 
-	gameSetup() {
-        // STUB: Reset State
-        this.isWin = false; // Reset the game win state
-        this.gameState = [];
-        this.index = 0;
-
-        // ANCHOR: Randomize player and enemy
-        const numberOfBlock = Math.floor(Math.random() * 6) + 3;
-        const theme = Math.floor(Math.random() * 4);
-        let enemy = [];
-        let boxes = [];
-        // Add the boxes and the holes
-        for(let b = 0; b < numberOfBlock; b++) {
-            const hole = [Math.floor(Math.random() * this.gridCap/3), Math.floor(Math.random() * this.gridCap)];
-            let box = [Math.floor(Math.random() * (this.gridCap/3 - 1)) + 1, Math.floor(Math.random() * (this.gridCap - 1)) + 1];
-            while((box[0] === hole[0] && box[1] === hole[1]) || (box[0] === this.gridCap/3 - 1 || box[1] === this.gridCap - 1) || this.checkIn(box, enemy)) {
-                box = [Math.floor(Math.random() * (this.gridCap/3 - 1)) + 1, Math.floor(Math.random() * (this.gridCap - 1)) + 1];
-            }
-            enemy.push(hole);
-            boxes.push(box);
-        }
-        
-        // Generate player
-        let player = [Math.floor(Math.random() * this.gridCap/3), Math.floor(Math.random() * this.gridCap)];
-        while(this.checkIn(player, enemy) || this.checkIn(player, boxes)) {
-            player = [Math.floor(Math.random() * this.gridCap/3), Math.floor(Math.random() * this.gridCap)];
-        }
-
-        // STUB: Fill in the grid
-        for(let i = 0; i < this.gridCap/3; i++) {
-            let row = [];
-            for(let j = 0; j < this.gridCap; j++) {
-                const coor = [i,j];
-                if(i === player[0] && j === player[1]) {
-                    row.push(':robot:');
-                } else if(this.checkIn(coor, enemy)) {
-                    row.push(this.themes[theme][0]);
-                } else if(this.checkIn(coor, boxes)) {
-                    row.push(this.themes[theme][1]);
-                } else {
-                    row.push(':black_large_square:');
-                }
-            }
-            this.gameState.push(row);
-        }
-
-        // STUB: Update the stored player and enemy location
-        this.playerLocation = player;
-        this.enemyLocation = enemy;
-        this.boxLocation = boxes;
-        this.index = theme;
-    },
-    // NOTE: Movement logic
-	move(direction) {
-
-        // STUB: Create a new array for the possible next moves
-        let newLocation = [this.playerLocation[0], this.playerLocation[1]];
-
-        // ANCHOR: Check which direction is called
-        switch(direction) {
-            case 'w':
-                newLocation[0] -= 1;
-                break;
-            case 's':
-                newLocation[0] += 1;
-                break;
-            case 'a':
-                newLocation[1] -= 1;
-                break;
-            case 'd':
-                newLocation[1] += 1;
-                break;
-        }
-
-        // REVIEW: If the future location is out of bound, reset it back, 
-        if(newLocation[0] > this.gridCap/3 - 1 || newLocation[0] < 0) {
-            newLocation[0] = this.playerLocation[0];
-        }
-        if(newLocation[1] > this.gridCap - 1 || newLocation[1] < 0) {
-            newLocation[1] = this.playerLocation[1];
-        }
-        if(this.checkIn(newLocation, this.enemyLocation)) { newLocation = this.playerLocation; }
-
-
-        // TODO: Moveable object
-        if(this.gameState[newLocation[0]][newLocation[1]] === this.themes[this.index][1]) {
-            let moveableCoordinate = [newLocation[0], newLocation[1]];
-            switch(direction) {
-                case 'w':
-                    moveableCoordinate[0] -= 1;
-                    break;
-                case 's':
-                    moveableCoordinate[0] += 1;
-                    break;
-                case 'a':
-                    moveableCoordinate[1] -= 1;
-                    break;
-                case 'd':
-                    moveableCoordinate[1] += 1;
-                    break;
-            }
-            // REVIEW: If the future location is out of bound, reset it back, 
-            if(moveableCoordinate[0] > this.gridCap/3 - 1 || moveableCoordinate[0] < 0) {
-                moveableCoordinate[0] = newLocation[0];
-                newLocation = this.playerLocation;
-            }
-            if(moveableCoordinate[1] > this.gridCap - 1 || moveableCoordinate[1] < 0) {
-                moveableCoordinate[1] = newLocation[1];
-                newLocation = this.playerLocation;
-            }
-            if(this.gameState[moveableCoordinate[0]][moveableCoordinate[1]] === this.themes[this.index][1]) {
-                moveableCoordinate = newLocation;
-                newLocation = this.playerLocation;
-            }
-            // Create a new object
-            let object = this.themes[this.index][1];
-            // If the current moveable reaches a target than change the object to the finished object
-            if(this.gameState[moveableCoordinate[0]][moveableCoordinate[1]] === this.themes[this.index][0]) { object = this.themes[this.index][2]}
-            // Change the next new location into the object
-            this.gameState[moveableCoordinate[0]][moveableCoordinate[1]] = object;
-            
-            // TODO: Update the moveable coordinate, to be able to determine the end game
-            for(let item = 0; item < this.boxLocation.length; item++) {
-                let coordinate = this.boxLocation[item];
-                if(coordinate[0] === newLocation[0] && coordinate[1] === newLocation[1]) {
-                    this.boxLocation[item] = moveableCoordinate;
-                }
-            }
-        }
-        
-
-        // ANCHOR: Move player
-        const temp = this.gameState[this.playerLocation[0]][this.playerLocation[1]];
-        this.gameState[this.playerLocation[0]][this.playerLocation[1]] = ':black_large_square:';
-        this.gameState[newLocation[0]][newLocation[1]] = temp;
-
-        // Set new location
-        this.playerLocation = newLocation;
-        this.checkWin();
-    },
-    checkIn(array, grid) {
-        // Given a normal array and a grid, check if the grid contains that array
-        for(let i = 0; i < grid.length; i++) {
-            let loop = grid[i];
-            if(loop[0] === array[0] && loop[1] === array[1]){
-                return true;
-            }
-        }
-        return false;
-    },
-    checkWin() {
-        // Check for the enemy locations and box locations 
-        for(let i = 0; i < this.boxLocation.length; i++) {
-            if(!this.checkIn(this.boxLocation[i], this.enemyLocation)) {
-                this.isWin = false;
-                return;
-            }
-        }
-        this.isWin = true;
-    },
-}
