@@ -85,10 +85,10 @@ class Roboton {
         }
 
         // Check for boundaries
-        if(predictedCoordinate[0] > this.gridSize/3 - 1 || predictedCoordinate[0] < 0) {
+        if(predictedCoordinate[0] > this.grid.height - 1 || predictedCoordinate[0] < 0) {
             return;
         }
-        if(predictedCoordinate[1] > this.gridSize - 1 || predictedCoordinate[1] < 0) {
+        if(predictedCoordinate[1] > this.grid.width - 1 || predictedCoordinate[1] < 0) {
             return;
         }
 
