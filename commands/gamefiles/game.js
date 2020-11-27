@@ -1,17 +1,23 @@
 class Roboton {
-    state;
-    playerCoordinate;
-    targetsCoordinate;
-    itemsCoordinate;
+    state; // Game State / Grid
+    playerCoordinate; // Saved player coordinate
+    targetsCoordinate; // Saved targets coordinates array
+    itemsCoordinate; // Saved items coordinates array
     grid = {
         width: 15,
         height: 5,
-    };
-    settings = [[':lock:', ':key:', ':unlock:'], [':pensive:', ':meat_on_bone:', ':star_struck:'], [':unamused:', ':microbe:', ':sick:'], [':sick:', ':syringe:', ':smile:']];
-    settingIndex;
-    isWin;
+    }; // Initial grid size
+    settings = [
+        [':lock:', ':key:', ':unlock:'], 
+        [':pensive:', ':meat_on_bone:', ':star_struck:'], 
+        [':unamused:', ':microbe:', ':sick:'], 
+        [':sick:', ':syringe:', ':smile:']
+    ]; // Themes
+    settingIndex; // Theme selected
+    isWin; // Is Win Method
 
     constructor() {
+
         // STUB: Reset all variables
         this.isWin = false;
         this.state = [];
@@ -22,7 +28,11 @@ class Roboton {
         // Create game state and all things required for the game
         const numberOfObjective = Roboton.uniform(6) + 3;
         this.settingIndex = Roboton.uniform(4);
+
+        // Create Objects
         for(let obj = 0; obj < numberOfObjective; obj++) {
+
+            // Initial objects
             const target = [Roboton.uniform(this.grid.height), Roboton.uniform(this.grid.width)];
             let key = [Roboton.uniform((this.grid.height - 1), 1), Roboton.uniform((this.grid.width - 1), 1)];
 
@@ -66,6 +76,7 @@ class Roboton {
     }
 
     move(direction) {
+
         // Create a prediction
         let predictedCoordinate = [this.playerCoordinate[0], this.playerCoordinate[1]];
 
@@ -113,6 +124,7 @@ class Roboton {
     }
 
     moveObject(location, direction) {
+
         // Predict item next movement
         let itemPrediction = [location[0], location[1]];
 
@@ -131,6 +143,7 @@ class Roboton {
                 itemPrediction[1] += 1;
                 break;
         }
+
         // REVIEW: If the future location is out of bound, reset it back, 
         if(itemPrediction[0] > this.gridSize/3 - 1 || itemPrediction[0] < 0) {
             return false;
@@ -152,6 +165,7 @@ class Roboton {
 
         // Create a new object
         let object = this.settings[this.settingIndex][1];
+
         // If the current moveable reaches a target than change the object to the finished object
         if(this.state[itemPrediction[0]][itemPrediction[1]] === this.settings[this.settingIndex][0]) { object = this.settings[this.settingIndex][2]; }
 
@@ -168,11 +182,13 @@ class Roboton {
             }
         }
 
-        // Notify the caller that  a movement happened meaning it is safe to move for them
+        // Notify the caller that a movement happened meaning it is safe to move for them
         return true; 
     }
 
     winningCheck() {
+
+        // Loop through items array see if any is left
         for(let i = 0; i < this.itemsCoordinate.length; i++) {
             if(!Roboton.checkArray(this.itemsCoordinate[i], this.targetsCoordinate)) {
                 this.isWin = false;
@@ -183,6 +199,8 @@ class Roboton {
     }
 
     static checkArray(array, grid) {
+
+        // My own function to check is the contents of array is similar
         if(!grid) { return false; }
         for(const item of grid) {
             if(array[0] === item[0] && array[1] === item[1]) {
@@ -193,6 +211,7 @@ class Roboton {
     }
 
     static uniform(start, end = 0) {
+        // Randomize uniform from start to end
         return Math.floor(Math.random() * (start - end) + end)
     }
 
